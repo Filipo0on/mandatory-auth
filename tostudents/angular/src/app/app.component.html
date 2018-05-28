@@ -1,14 +1,43 @@
 <div class="container">
-  
+
   <!-- Complete this markup for showing error upon unsuccessful login. -->
-  <p class="error">Login credentials were incorrect!</p>
+  <p *ngIf="credentialsFail" class="error" >Login credentials were incorrect!</p>
 
   <!-- Complete this markup for showing the status bar correctly, depending on whether or not the user is authenticated. -->
   <div class="status">
-    <span>User ID: </span>
-    <button (click)="testApi()">Test API</button>
-    <button (click)="logout()">Logout</button>
+    <span>User ID: <span>{{ authService._user && authService._user.name !== undefined ? authService._user.name : 'N/A' }}</span></span>
+    <button class="btn" (click)="testApi()">Test API</button>
+    <button class="btn" *ngIf="authService._user" (click)="logout()">Logout</button>
   </div>
 
   <!-- Add markup for showing the login form if the user is not authenticated. -->
+  <form class="form-group" *ngIf="!authService._user" (ngSubmit)="login()">
+<br>
+    <input
+      class="form-control"
+      type="text"
+      id="userName"
+      [(ngModel)]="credentials.username"
+      name="username"
+      placeholder="Username"
+    >
+<br>
+    <input
+      class="form-control"
+      type="password"
+      id="password"
+      [(ngModel)]="credentials.password"
+      name="password"
+    placeholder="Password"
+    >
+    <br>
+    <input class="btn" type="submit" value="Login" [disabled]="!validForm()">
+  </form>
+  <div *ngFor="let friend of myFriends">
+    <div>
+      <h5>
+        {{ friend.name }}
+      </h5>
+
+  </div>
 </div>

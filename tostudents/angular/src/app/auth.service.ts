@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import jwt_decode from 'jwt-decode';
+import * as jwt_decode from 'jwt-decode';
+import { Router } from '@angular/router';
 
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
@@ -9,7 +10,6 @@ import 'rxjs/add/observable/throw';
 
 
 // ...
-
 interface AuthResponse {
   token: string;
 }
@@ -18,17 +18,26 @@ interface User {
   sub: string;
   name: string;
 }
+interface Friends {
+  name: string,
+  myDesc: string;
+}
 
 // ...
-
 @Injectable()
 export class AuthService {
 
   // the decoded token if the user has been authenticated, carrying information about the user.
   _user: User;
-
+  _friends: Friends;
+  token;
   // inject the HttpClient service.
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private router: Router) {
+    if (localStorage.getItem('user')){
+      this.token = localStorage.getItem('user');
+      this._user = jwt_decode(this.token);
+
+    }
     // perform any logic upon application startup here...
   }
 
@@ -49,27 +58,49 @@ export class AuthService {
     });
   }
 
-  login(credentials): Observable<User> {
+  login(credentials) {
     // invoke the relevant API route for authenticating the user with the given credentials and return an observable
     // of a User object (= decoded token).
-    //
+
+    const ob = this.http.post('/login', credentials);
+    ob.subscribe((result: any) => {
+      this.token = result.token;
+      const decoded = jwt_decode(this.token);
+      this._user = decoded;
+      localStorage.setItem('user', this.token);
+      this.router.navigate(['/friends']);
+    }, (error) => {
+      console.error('Failed to login', error);
+    });
+    console.log(status);
     // Make sure to handle a successful authentication by storing and also decoding the returned token, as well as
     // catching http errors.
-
     // return ...
-    return;
+    return ob;
   }
 
   logout() {
+    this._user = null;
+    localStorage.removeItem('user');
+    this.router.navigate(['/']);
+    this._friends = null;
     // logout the current user by removing the corresponding token.
   }
 
-  getResource(resource): Observable<any> {
-    // invoke a protected API route by including the Authorization header and return an Observable.
-    //
-    // If e.g. invoking /api/friends, the 'resource' parameter should equal 'friends'.
 
+  getResource(resource): Observable<any> {
+    const options = {
+      headers: new HttpHeaders({
+        'Authorization': `Bearer ${this.token}`
+      })
+    };
+    const ob = this.http.get<any>(resource, options);
+    ob.subscribe((res) => {
+      this._friends = res;
+    });
+    // invoke a protected API route by including the Authorization header and return an Observable.
+    // If e.g. invoking /api/friends, the 'resource' parameter should equal 'friends'.
     // return ...
-    return;
+    return ob;
   }
 }

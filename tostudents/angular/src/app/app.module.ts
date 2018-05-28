@@ -7,13 +7,21 @@ import { AuthService } from './auth.service';
 import { AuthInterceptor } from './auth-interceptor';
 import { AppComponent } from './app.component';
 
+import { RouterModule } from '@angular/router';
+
+const appRoutes = [
+  {path:'', component: AppComponent},
+  {path:'friends', component: AppComponent}
+];
+
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+
   ],
   imports: [
     BrowserModule,
-
+    RouterModule.forRoot(appRoutes),
     FormsModule,
     HttpClientModule
   ],
